@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Practice.Constructor;
 using Practice.Polymorphism;
 
 namespace Practice
@@ -12,6 +13,11 @@ namespace Practice
     {
         static void Main()
         {
+            Car car = new Car("Honda"); // parameterized contructor
+            Car CopiedCar = new Car(car);
+
+            
+
             A obj4 = new C();
             obj4.Show(); // Calls the most derived override: "C"
 
