@@ -13,6 +13,10 @@ namespace Practice
     {
         static void Main()
         {
+            Practice.FirstNonRepeatingChar("QAArchitect");
+            Practice p = new Practice();
+            p.LinQuery();
+
             Car car = new Car("Honda"); // parameterized contructor
             Car CopiedCar = new Car(car);
 

@@ -53,13 +53,23 @@ namespace Practice
 
 
             //Find the average age of people in each city, but only include cities where there are more than 2 people.
-            var morethantwopeople = people.GroupBy(p => p.City)
+            var morethantwopeople = people.GroupBy(p => p.City) 
                                     .Where(p => p.Count() > 2)
                                     .Select(p => new
                                     {
                                         City = p.Key,
                                         Average = p.Average(p => p.Age)
                                     });
+            var countEachCity = people.GroupBy(p => p.City)
+                                        .Select(group => new
+                                        {
+                                            City = group.Key,
+                                            Count = group.Count()
+                                        }); 
+            foreach (var city in countEachCity)
+            {
+                Console.WriteLine($"{city.City}: {city.Count} people");
+            }
 
             //Find the names of people who are older than the average age of all people in the list.
 
@@ -77,12 +87,54 @@ namespace Practice
             var employees = new List<int> { 40000, 60000, 80000, 100000, 120000 };
 
             var filteredEmployees = employees.Where(emp => emp >= 50000 && emp <= 100000).OrderByDescending(emp => emp).ToList();
+            var lstEmp = employees.Where(emp=>emp > 50000).Select(emp=>emp).ToList();
 
-
+            var morthansitythousand = employees.Where(emp=>emp>60000).Average(emp=>emp);
             foreach (var person in result)
             {
                 Console.WriteLine(person.Name);
             }
+        }
+
+        public static void FirstNonRepeatingChar(string input)
+        {
+            //for (int i = 0; i < input.Length; i++) 
+            //{
+            //    for (int j=i+1; j < input.Length; j++) 
+            //    {
+            //        if(input[i] == input[j])
+            //        {
+            //            break;
+            //        }
+            //    }
+            //    Console.WriteLine("This is first not repeating char::"+input[i]);
+            //    break;
+            //}
+
+            Dictionary<char,int> keyValuePairs = new Dictionary<char,int>();
+
+            foreach (var c in input)
+            {
+                if (!keyValuePairs.ContainsKey(c))
+                {
+                    keyValuePairs.Add(c, 1);
+                }
+                else 
+                {
+                    keyValuePairs[c]++;
+                }
+            }
+
+            foreach (var keyValue in keyValuePairs)
+            {
+                if(keyValue.Value == 1)
+                {
+                    Console.WriteLine(keyValue.Key);
+                }
+            }
+
+
+
         }
     }
 }
