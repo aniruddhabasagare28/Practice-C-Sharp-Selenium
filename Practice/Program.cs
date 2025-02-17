@@ -150,5 +150,33 @@ namespace Practice
             }
             return true;
         }
+
+        public static void ReverseWordinSentance(string input)
+        {
+            string[] s = input.Split(' ');
+            string rsetance = "";
+            for (int i = s.Length-1; i >=0; i--)
+            {
+                rsetance += s[i] + " ";
+            }
+            Console.WriteLine(rsetance);
+        }
+
+        public static void ReverseLongestWordInSentance(string input) 
+        {
+            string[] words = input.Split(" ");
+            int maxlength = 0;
+            string lword = "";
+            foreach (string word in words) 
+            {
+                if(word.Length > maxlength)
+                {
+                    maxlength = word.Length;
+                    lword = word;
+                }
+            }
+
+        }
+         
     }
 }

@@ -13,7 +13,7 @@ namespace Practice
     {
         static void Main()
         {
-            Practice.FirstNonRepeatingChar("QAArchitect");
+            Practice.LongestUniqueSubstring("abcabcbb");
             Practice p = new Practice();
             p.LinQuery();
 
