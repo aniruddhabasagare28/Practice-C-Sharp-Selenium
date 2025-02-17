@@ -13,7 +13,14 @@ namespace Practice
     {
         static void Main()
         {
-            Practice.LongestUniqueSubstring("abcabcbb");
+            MyStack stack = new MyStack(5);
+            stack.Push(3);
+            stack.Push(4);
+            stack.Push(1);
+            stack.Push(6);
+            stack.Push(7);
+            stack.Push(8);
+
             Practice p = new Practice();
             p.LinQuery();
 
