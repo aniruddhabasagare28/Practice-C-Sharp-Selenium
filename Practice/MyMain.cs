@@ -13,6 +13,9 @@ namespace Practice
     {
         static void Main()
         {
+            Patterns.Patterns2(5);
+
+
             MyStack stack = new MyStack(5);
             stack.Push(3);
             stack.Push(4);
