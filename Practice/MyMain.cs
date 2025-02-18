@@ -13,7 +13,7 @@ namespace Practice
     {
         static void Main()
         {
-            Patterns.Patterns2(5);
+            Patterns.PrintPyramid(5);
 
 
             MyStack stack = new MyStack(5);

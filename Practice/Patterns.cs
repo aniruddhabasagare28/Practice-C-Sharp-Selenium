@@ -40,5 +40,15 @@ namespace Practice
                 Console.WriteLine(); // Move to the next line
             }
         }
+
+        public static void PrintPyramid(int n)
+        {
+            for (int i = 1; i <= n; i++)
+            {
+                string spaces = new string(' ', n - i);
+                string stars = new string('*', 2 * i - 1);
+                Console.WriteLine(spaces + stars);
+            }
+        }
     }
 }
