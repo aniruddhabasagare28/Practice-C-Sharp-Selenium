@@ -13,7 +13,11 @@ namespace Practice
     {
         static void Main()
         {
-            Patterns.PrintPyramid(5);
+            for (int i = 0; i <= 5; i++)
+            {
+                Console.Write(Practice.FibonacciRecursive(i)+" ");
+
+            }
 
 
             MyStack stack = new MyStack(5);

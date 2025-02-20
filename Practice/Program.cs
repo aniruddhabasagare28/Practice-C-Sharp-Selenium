@@ -26,8 +26,6 @@ namespace Practice
     new Person { Name = "David", Age = 28, City = "New York" },
 };
 
-
-
         public void LinQuery()
         {
 
@@ -177,6 +175,27 @@ namespace Practice
             }
 
         }
-         
+
+        public static void FibonacciSeriesWithouREcurssion(int n)
+        {
+            int a = 0, b = 1, temp;
+            Console.WriteLine("Fibonacci Series: " + a + " " + b );
+            for (int i = 1; i < n; i++)
+            {
+                temp = a + b;
+                Console.Write(temp + "  ");
+                a = b; b = temp;
+            }
+        }
+
+        public static int FibonacciRecursive(int n)
+        {
+            if(n == 0)
+            {
+                return n;
+            }
+            if (n == 1) { return 1; }
+            return FibonacciRecursive(n - 1) + FibonacciRecursive(n - 2);
+        }
     }
 }
