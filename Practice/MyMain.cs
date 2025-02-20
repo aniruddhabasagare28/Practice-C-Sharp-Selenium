@@ -13,6 +13,17 @@ namespace Practice
     {
         static void Main()
         {
+
+            ICoffee coffee = new SimpleCoffee();
+            Console.WriteLine($"{coffee.GetDescription()} - ${coffee.GetCost()}");
+
+            coffee = new MilkDecorator(coffee);  // Adding Milk
+            Console.WriteLine($"{coffee.GetDescription()} - ${coffee.GetCost()}");
+
+            coffee = new SugarDecorator(coffee); // Adding Sugar
+            Console.WriteLine($"{coffee.GetDescription()} - ${coffee.GetCost()}");
+
+
             for (int i = 0; i <= 5; i++)
             {
                 Console.Write(Practice.FibonacciRecursive(i)+" ");
