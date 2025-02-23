@@ -1,0 +1,41 @@
+name: Selenium C# Tests
+
+on:
+  push:
+    branches:
+      - main  # Modify if needed
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x  # Change based on your project version
+
+      - name: Restore dependencies
+        run: dotnet restore SeleniumFramework/SeleniumFramework.csproj
+
+      - name: Build the project
+        run: dotnet build SeleniumFramework/SeleniumFramework.csproj --no-restore
+
+      - name: Start Selenium Grid using Docker Compose
+        run: docker-compose -f SeleniumFramework/01-replicas-grid/docker-compose.yaml up -d
+
+      - name: Wait for Selenium Grid to be ready
+        run: sleep 10s  # Increase if Grid takes longer to start
+
+      - name: Run Selenium tests
+        run: dotnet test --settings SeleniumFramework/test.runsettings SeleniumFramework/SeleniumFramework.csproj --logger trx
+
+      - name: Stop Selenium Grid
+        if: always()  # Ensures Grid is stopped even if tests fail
+        run: docker-compose -f SeleniumFramework/01-replicas-grid/docker-compose.yaml down
