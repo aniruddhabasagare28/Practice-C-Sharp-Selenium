@@ -7,8 +7,11 @@ using SeleniumFramework.Pages;
 
 namespace SeleniumFramework.Test
 {
+    [Parallelizable(ParallelScope.All)]  // Enables parallel execution
     public class LoginTests : BaseTest
     {
+        
+
         [Test]
         public void TestLoginFunctionality()
         {
@@ -34,5 +37,6 @@ namespace SeleniumFramework.Test
 
             Assert.That(Driver.Url, Is.EqualTo("https://the-internet.herokuapp.com/secure"), "Login failed!");
         }
+
     }
 }

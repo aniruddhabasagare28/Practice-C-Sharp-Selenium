@@ -12,16 +12,22 @@ namespace SeleniumFramework.Test
 {
     public class BaseTest
     {
-        protected IWebDriver Driver;
+        private static ThreadLocal<IWebDriver> _driver = new ThreadLocal<IWebDriver>();
+
+        protected IWebDriver Driver
+        {
+            get { return _driver.Value; }
+            set { _driver.Value = value; }
+        }
 
         [SetUp]
         public void Setup()
         {
             string browser = ConfigReader.Get("Browser");  // Read from appsettings.json
-            string gridLink = ConfigReader.Get("GridURL"); 
+            string gridLink = ConfigReader.Get("GridURL");
+
             Driver = DriverFactoryProvider.GetFactoryDriver(browser, gridLink).CreateDriver();
             Driver.Manage().Window.Maximize();
-            //Logger.Log("Browser launched: " + browser);
         }
 
         [TearDown]
@@ -31,7 +37,17 @@ namespace SeleniumFramework.Test
             {
                 Driver.Quit();
                 Driver.Dispose();
-                ///Logger.Log("Browser closed.");
+                _driver.Value = null; // Clear the ThreadLocal storage
+            }
+        }
+
+        [OneTimeTearDown]
+        public void Cleanup()
+        {
+            if (_driver != null)
+            {
+                _driver.Dispose();
+                _driver = null;
             }
         }
     }

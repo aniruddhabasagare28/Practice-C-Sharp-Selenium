@@ -10,11 +10,13 @@ using OpenQA.Selenium.Remote;
 
 namespace SeleniumFramework.Core
 {
+  
     public interface IWebDriverFactory
     {
         IWebDriver CreateDriver();
     }
 
+   
     public class ChromeDriverFactor : IWebDriverFactory
     {
         private readonly string _gridLink;
