@@ -42,7 +42,7 @@ jobs:
         run: dotnet test --settings SeleniumFramework/test.runsettings SeleniumFramework/SeleniumFramework.csproj --logger "trx;LogFileName=TestResults.trx"
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: TestResults
           path: SeleniumFramework/TestResults/*.trx
