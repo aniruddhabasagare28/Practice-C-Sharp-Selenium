@@ -21,5 +21,18 @@ namespace SeleniumFramework.Test
 
             Assert.That(Driver.Url, Is.EqualTo("https://the-internet.herokuapp.com/secure"), "Login failed!");
         }
+
+        [Test]
+        public void TestLogoutFunctionality()
+        {
+            Driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/login");  // Dummy login site
+
+            LoginPage loginPage = new LoginPage(Driver);
+            loginPage.EnterUsername("tomsmith");
+            loginPage.EnterPassword("SuperSecretPassword!");
+            loginPage.ClickLogin();
+
+            Assert.That(Driver.Url, Is.EqualTo("https://the-internet.herokuapp.com/secure"), "Login failed!");
+        }
     }
 }

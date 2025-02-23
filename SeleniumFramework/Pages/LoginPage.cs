@@ -20,6 +20,7 @@ namespace SeleniumFramework.Pages
         private IWebElement Username => _driver.FindElement(By.Id("username"));
         private IWebElement Password => _driver.FindElement(By.Id("password"));
         private IWebElement LoginButton => _driver.FindElement(By.XPath("//button"));
+        private IWebElement LogoutButton => _driver.FindElement(By.XPath("//a[contains(@href,'logout')]"));
 
         // Actions
         public void EnterUsername(string username) => Username.SendKeys(username);

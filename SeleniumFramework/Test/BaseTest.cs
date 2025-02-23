@@ -18,7 +18,8 @@ namespace SeleniumFramework.Test
         public void Setup()
         {
             string browser = ConfigReader.Get("Browser");  // Read from appsettings.json
-            Driver = DriverFactoryProvider.GetFactoryDriver(browser).CreateDriver();
+            string gridLink = ConfigReader.Get("GridURL"); 
+            Driver = DriverFactoryProvider.GetFactoryDriver(browser, gridLink).CreateDriver();
             Driver.Manage().Window.Maximize();
             //Logger.Log("Browser launched: " + browser);
         }
