@@ -34,16 +34,22 @@ jobs:
           driver: docker
       
       - name: Start Minikube with More Resources
-        run: minikube start --memory=4000 --cpus=2
+        run: minikube start --memory=6000 --cpus=3
       
       - name: Deploy Selenium Grid on Kubernetes
         run: |
           kubectl apply -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
           kubectl wait --for=condition=available deployment/selenium-hub --timeout=300s
-          
+
       - name: Wait for Selenium Hub to be Ready
         run: |
           kubectl wait --for=condition=ready pod -l app=selenium-hub --timeout=300s
+          kubectl get pods -n default
+
+      - name: Wait for Selenium Nodes to be Ready
+        run: |
+          echo "Waiting for Chrome nodes to be ready..."
+          kubectl wait --for=condition=ready pod -l app=selenium-node-chrome --timeout=300s
           kubectl get pods -n default
 
       - name: Restore dependencies
@@ -61,10 +67,19 @@ jobs:
           name: TestResults
           path: SeleniumFramework/TestResults/*.trx
 
+      - name: Debug Logs (on failure)
+        if: failure()
+        run: |
+          echo "Fetching pod logs for debugging..."
+          kubectl get pods -n default
+          kubectl describe pods -l app=selenium-hub
+          kubectl describe pods -l app=selenium-node-chrome
+          kubectl logs -l app=selenium-hub
+          kubectl logs -l app=selenium-node-chrome
+
       - name: Stop Selenium Grid
         if: always()
         run: kubectl delete -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
 
       - name: Stop Minikube (Always Run)
-        if: always()
-        run: minikube delete
+        if: alwa
