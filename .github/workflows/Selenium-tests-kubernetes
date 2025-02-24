@@ -1,0 +1,61 @@
+name: Selenium C# Tests
+
+on:
+  push:
+    branches:
+      - main  # Modify if needed
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x  # Change based on your project version
+          
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
+      - name: Set up Minikube
+        uses: medyagh/setup-minikube@latest
+        with:
+          driver: docker
+      
+      - name: Start Minikube
+        run: minikube start
+      
+      - name: Deploy Selenium Grid on Kubernetes
+        run: |
+          kubectl apply -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
+          kubectl wait --for=condition=available --timeout=120s deployment/selenium-hub
+      
+      - name: Restore dependencies
+        run: dotnet restore SeleniumFramework/SeleniumFramework.csproj
+
+      - name: Build the project
+        run: dotnet build SeleniumFramework/SeleniumFramework.csproj --no-restore
+
+      - name: Run Selenium tests
+        run: dotnet test --settings SeleniumFramework/test.runsettings SeleniumFramework/SeleniumFramework.csproj --logger "trx;LogFileName=TestResults.trx"
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: SeleniumFramework/TestResults/*.trx
+
+      - name: Stop Selenium Grid
+        if: always()  # Ensures Grid is stopped even if tests fail
+        run: kubectl delete -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
