@@ -40,7 +40,12 @@ jobs:
         run: |
           kubectl apply -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
           kubectl wait --for=condition=available deployment/selenium-hub --timeout=300s
-      
+          
+      - name: Wait for Selenium Hub to be Ready
+        run: |
+          kubectl wait --for=condition=ready pod -l app=selenium-hub --timeout=300s
+          kubectl get pods -n default
+
       - name: Restore dependencies
         run: dotnet restore SeleniumFramework/SeleniumFramework.csproj
 
