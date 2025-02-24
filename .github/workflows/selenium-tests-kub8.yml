@@ -82,4 +82,5 @@ jobs:
         run: kubectl delete -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
 
       - name: Stop Minikube (Always Run)
-        if: alwa
+        if: always()
+        run: minikube delete
