@@ -46,11 +46,14 @@ jobs:
           kubectl wait --for=condition=ready pod -l app=selenium-hub --timeout=300s
           kubectl get pods -n default
 
+      - name: Forward Selenium Hub Port
+        run: kubectl port-forward svc/selenium-hub 4444:4444 &
+      
+      - name: Get Minikube IP
+        run: echo "SELENIUM_HUB_IP=$(minikube ip)" >> $GITHUB_ENV
+      
       - name: Wait for Selenium Nodes to be Ready
-        run: |
-          echo "Waiting for Chrome nodes to be ready..."
-          kubectl wait --for=condition=ready pod -l app=selenium-node-chrome --timeout=300s
-          kubectl get pods -n default
+        run: kubectl wait --for=condition=ready pod -l app=selenium-node-chrome --timeout=600s
 
       - name: Restore dependencies
         run: dotnet restore SeleniumFramework/SeleniumFramework.csproj
