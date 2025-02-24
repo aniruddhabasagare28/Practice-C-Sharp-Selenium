@@ -1,9 +1,9 @@
-name: Selenium C# Tests
+name: Selenium C# Tests (Kubernetes)
 
 on:
   push:
     branches:
-      - main  # Modify if needed
+      - main
   pull_request:
     branches:
       - main
@@ -19,7 +19,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x  # Change based on your project version
+          dotnet-version: 8.0.x
           
       - name: Install kubectl
         run: |
@@ -33,13 +33,13 @@ jobs:
         with:
           driver: docker
       
-      - name: Start Minikube
-        run: minikube start
+      - name: Start Minikube with More Resources
+        run: minikube start --memory=4000 --cpus=2
       
       - name: Deploy Selenium Grid on Kubernetes
         run: |
           kubectl apply -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
-          kubectl wait --for=condition=available --timeout=120s deployment/selenium-hub
+          kubectl wait --for=condition=available deployment/selenium-hub --timeout=300s
       
       - name: Restore dependencies
         run: dotnet restore SeleniumFramework/SeleniumFramework.csproj
@@ -57,5 +57,9 @@ jobs:
           path: SeleniumFramework/TestResults/*.trx
 
       - name: Stop Selenium Grid
-        if: always()  # Ensures Grid is stopped even if tests fail
+        if: always()
         run: kubectl delete -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
+
+      - name: Stop Minikube (Always Run)
+        if: always()
+        run: minikube delete
