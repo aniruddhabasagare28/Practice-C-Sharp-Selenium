@@ -3,13 +3,13 @@ name: Selenium C# Tests
 on:
   push:
     branches:
-      - main  # Modify if needed
+      - main
   pull_request:
     branches:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,27 +19,55 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x  # Change based on your project version
-          
+          dotnet-version: 8.0.x
+
+      - name: Cache built DLLs
+        id: cache-dlls
+        uses: actions/cache@v3
+        with:
+          path: SeleniumFramework/bin/Release/
+          key: build-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.cs') }}
+          restore-keys: |
+            build-${{ runner.os }}-
+
+      - name: Restore dependencies
+        if: steps.cache-dlls.outputs.cache-hit != 'true'
+        run: dotnet restore SeleniumFramework/SeleniumFramework.csproj
+
+      - name: Build the project
+        if: steps.cache-dlls.outputs.cache-hit != 'true'
+        run: dotnet build SeleniumFramework/SeleniumFramework.csproj --no-restore --configuration Release
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
-          
-      - name: Restore dependencies
-        run: dotnet restore SeleniumFramework/SeleniumFramework.csproj
 
-      - name: Build the project
-        run: dotnet build SeleniumFramework/SeleniumFramework.csproj --no-restore
+      - name: Restore Cached DLLs
+        id: cache-dlls
+        uses: actions/cache@v3
+        with:
+          path: SeleniumFramework/bin/Release/
+          key: build-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.cs') }}
+          restore-keys: |
+            build-${{ runner.os }}-
 
       - name: Start Selenium Grid using Docker Compose
         run: docker-compose -f SeleniumFramework/01-replicas-grid/docker-compose.yaml up -d
 
       - name: Wait for Selenium Grid to be ready
-        run: sleep 10s  # Increase if Grid takes longer to start
+        run: sleep 10s  
 
       - name: Run Selenium tests
-        run: dotnet test --settings SeleniumFramework/test.runsettings SeleniumFramework/SeleniumFramework.csproj --logger "trx;LogFileName=TestResults.trx"
+        run: dotnet test --no-build --settings SeleniumFramework/test.runsettings --logger "trx;LogFileName=TestResults.trx" SeleniumFramework/bin/Release/SeleniumFramework.dll
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
@@ -48,5 +76,5 @@ jobs:
           path: SeleniumFramework/TestResults/*.trx
 
       - name: Stop Selenium Grid
-        if: always()  # Ensures Grid is stopped even if tests fail
+        if: always()
         run: docker-compose -f SeleniumFramework/01-replicas-grid/docker-compose.yaml down
