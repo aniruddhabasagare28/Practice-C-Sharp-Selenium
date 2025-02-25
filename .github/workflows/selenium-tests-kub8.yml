@@ -43,21 +43,37 @@ jobs:
         run: |
           echo "Checking pod status..."
           
+          timeout=120  # Timeout in seconds (5 minutes)
+          elapsed=0
+          interval=5   # Check interval in seconds
+      
           # Wait for Selenium Hub to be Ready
           while [[ $(kubectl get pods -l app=selenium-hub -o 'jsonpath={.items[*].status.containerStatuses[*].ready}' | grep -c "true") -lt 1 ]]; do
             echo "Waiting for Selenium Hub to be ready..."
             kubectl get pods -l app=selenium-hub
-            sleep 5
+            sleep $interval
+            elapsed=$((elapsed + interval))
+      
+            if [[ $elapsed -ge $timeout ]]; then
+              echo "⏳ Timeout reached while waiting for Selenium Hub! Proceeding..."
+              break
+            fi
           done
-          
-          # Wait for all Chrome nodes to be Ready
+elapsed=0
+
+    # Wait for all Chrome nodes to be Ready
           while [[ $(kubectl get pods -l app=selenium-node-chrome -o 'jsonpath={.items[*].status.containerStatuses[*].ready}' | grep -c "true") -lt 2 ]]; do
             echo "Waiting for all Chrome nodes to be ready..."
             kubectl get pods -l app=selenium-node-chrome
-            sleep 5
+            sleep $interval
+            elapsed=$((elapsed + interval))
+      
+            if [[ $elapsed -ge $timeout ]]; then
+              echo "⏳ Timeout reached while waiting for Chrome nodes! Proceeding..."
+              break
+            fi
           done
-          
-          echo "✅ All Selenium Grid pods are ready!"
+    echo "✅ All Selenium Grid pods are ready or timeout reached!"
 
       - name: 🔀 Port Forward Selenium Grid (Background)
         run: |
