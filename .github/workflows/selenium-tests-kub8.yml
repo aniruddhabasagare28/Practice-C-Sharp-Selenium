@@ -1,4 +1,4 @@
-name: Selenium C# Tests (Kubernetes)
+name: Run Selenium Tests on K8s Grid
 
 on:
   push:
@@ -9,81 +9,67 @@ on:
       - main
 
 jobs:
-  test:
+  selenium-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the repository
+      - name: 📥 Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up .NET
+      - name: 🔧 Set up .NET 8
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
-          
-      - name: Install kubectl
+          dotnet-version: '8.0.x'
+
+      - name: 🚀 Install Kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
           kubectl version --client
 
-      - name: Set up Minikube
-        uses: medyagh/setup-minikube@latest
+      - name: 🔄 Start Minikube (Local Kubernetes)
+        uses: medyagh/setup-minikube@v0.0.14
         with:
           driver: docker
-      
-      - name: Start Minikube with More Resources
-        run: minikube start --memory=6000 --cpus=3
-      
-      - name: Deploy Selenium Grid on Kubernetes
+
+      - name: 📦 Deploy Selenium Grid to Kubernetes
         run: |
           kubectl apply -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
-          kubectl wait --for=condition=available deployment/selenium-hub --timeout=300s
+          echo "Waiting for pods to start..."
+          sleep 10
 
-      - name: Wait for Selenium Hub to be Ready
+      - name: ⏳ Wait for Selenium Grid Pods to be Ready
         run: |
-          kubectl wait --for=condition=ready pod -l app=selenium-hub --timeout=300s
-          kubectl get pods -n default
+          echo "Checking pod status..."
+          while [[ $(kubectl get pods -l app=selenium-hub -o 'jsonpath={.items[*].status.phase}') != "Running" ]]; do
+            echo "Waiting for Selenium Hub pod to be ready..."
+            sleep 10
+          done
+          while [[ $(kubectl get pods -l app=selenium-node-chrome -o 'jsonpath={.items[*].status.phase}' | grep -c "Running") -lt 2 ]]; do
+            echo "Waiting for all Chrome node pods to be ready..."
+            sleep 10
+          done
+          echo "All pods are running."
 
-      - name: Forward Selenium Hub Port
-        run: kubectl port-forward svc/selenium-hub 4444:4444 &
-      
-      - name: Get Minikube IP
-        run: echo "SELENIUM_HUB_IP=$(minikube ip)" >> $GITHUB_ENV
-      
-      - name: Wait for Selenium Nodes to be Ready
-        run: kubectl wait --for=condition=ready pod -l app=selenium-node-chrome --timeout=600s
+      - name: 🔀 Port Forward Selenium Grid (Background)
+        run: |
+          kubectl port-forward svc/selenium-hub 4444:4444 &
+          sleep 5
 
-      - name: Restore dependencies
-        run: dotnet restore SeleniumFramework/SeleniumFramework.csproj
-
-      - name: Build the project
-        run: dotnet build SeleniumFramework/SeleniumFramework.csproj --no-restore
-
-      - name: Run Selenium tests
+      - name: 🏃 Run Selenium Tests
         run: dotnet test --settings SeleniumFramework/test.runsettings SeleniumFramework/SeleniumFramework.csproj --logger "trx;LogFileName=TestResults.trx"
 
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+      - name: 📤 Upload Test Results
+        uses: actions/upload-artifact@v3
         with:
-          name: TestResults
-          path: SeleniumFramework/TestResults/*.trx
+          name: test-results
+          path: SeleniumFramework/TestResults.trx
 
-      - name: Debug Logs (on failure)
-        if: failure()
+      - name: 🧹 Cleanup Kubernetes Resources
+        if: always()
         run: |
-          echo "Fetching pod logs for debugging..."
-          kubectl get pods -n default
-          kubectl describe pods -l app=selenium-hub
-          kubectl describe pods -l app=selenium-node-chrome
-          kubectl logs -l app=selenium-hub
-          kubectl logs -l app=selenium-node-chrome
-
-      - name: Stop Selenium Grid
-        if: always()
-        run: kubectl delete -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
-
-      - name: Stop Minikube (Always Run)
-        if: always()
-        run: minikube delete
+          echo "Deleting Kubernetes resources..."
+          kubectl delete -f SeleniumFramework/selenium-grid.yaml
+          kubectl delete pod --all
+          echo "Cleanup complete."
