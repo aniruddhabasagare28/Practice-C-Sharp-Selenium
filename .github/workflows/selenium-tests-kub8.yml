@@ -1,0 +1,90 @@
+name: Run Selenium Tests on K8s Grid
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  selenium-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🔧 Set up .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: 🚀 Install Kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
+      - name: 🔄 Start Minikube (Local Kubernetes)
+        uses: medyagh/setup-minikube@v0.0.14
+        with:
+          driver: docker
+
+      - name: 📦 Deploy Selenium Grid to Kubernetes
+        run: |
+          kubectl apply -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
+          echo "Waiting for pods to start..."
+          sleep 10
+
+      - name: ⏳ Wait for Selenium Grid to be Ready
+        run: |
+          echo "Waiting for Selenium Hub to be ready..."
+          kubectl wait --for=condition=ready pod -l app=selenium-hub --timeout=180s
+          echo "Waiting for Selenium Nodes to be ready..."
+          kubectl wait --for=condition=ready pod -l app=selenium-node-chrome --timeout=180s
+          
+      - name: 🌐 Get Selenium Grid Hub URL & Forward Port
+        run: |
+          echo "Fetching Selenium Grid Hub details..."
+          
+          # Get the Kubernetes service IP
+          CLUSTER_IP=$(kubectl get svc selenium-hub -o jsonpath='{.spec.clusterIP}')
+          
+          # Get the NodePort for port 4444
+          NODE_PORT=$(kubectl get svc selenium-hub -o jsonpath='{.spec.ports[?(@.port==4444)].nodePort}')
+          
+          # Construct the Selenium Grid Hub URL
+          SELENIUM_GRID_URL="http://${CLUSTER_IP}:${NODE_PORT}"
+          
+          # Print the URL
+          echo "✅ Selenium Grid Hub is running at: $SELENIUM_GRID_URL"
+          
+          # Export URL for later use
+          echo "SELENIUM_GRID_URL=$SELENIUM_GRID_URL" >> $GITHUB_ENV
+          
+          # Start port-forwarding Selenium Grid to localhost:4444
+          echo "🔄 Forwarding port $NODE_PORT to localhost:4444..."
+          nohup kubectl port-forward svc/selenium-hub 4444:$NODE_PORT > /dev/null 2>&1 &
+
+          # Confirm forwarding
+          echo "✅ Selenium Grid is now accessible at: http://localhost:4444"
+          
+          
+      - name: 🏃 Run Selenium Tests
+        run: |
+          dotnet test --settings SeleniumFramework/test.runsettings SeleniumFramework/SeleniumFramework.csproj --logger "trx;LogFileName=TestResults.trx"
+
+      - name: 📤 Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: SeleniumFramework/TestResults.trx
+
+      - name: 🧹 Cleanup Kubernetes Resources
+        if: always()
+        run: |
+          kubectl delete -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
+          kubectl delete pod --all
