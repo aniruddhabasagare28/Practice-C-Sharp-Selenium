@@ -42,12 +42,18 @@ jobs:
       - name: ⏳ Wait for Selenium Grid Pods to be Ready
         run: |
           echo "Checking pod status..."
+          
+          # Wait for Selenium Hub
           while [[ $(kubectl get pods -l app=selenium-hub -o 'jsonpath={.items[*].status.phase}') != "Running" ]]; do
             echo "Waiting for Selenium Hub pod to be ready..."
+            kubectl get pods
             sleep 10
           done
+          
+          # Wait for all Chrome nodes to be ready
           while [[ $(kubectl get pods -l app=selenium-node-chrome -o 'jsonpath={.items[*].status.phase}' | grep -c "Running") -lt 2 ]]; do
             echo "Waiting for all Chrome node pods to be ready..."
+            kubectl get pods -l app=selenium-node-chrome -o wide
             sleep 10
           done
           echo "All pods are running."
@@ -70,6 +76,6 @@ jobs:
         if: always()
         run: |
           echo "Deleting Kubernetes resources..."
-          kubectl delete -f SeleniumFramework/selenium-grid.yaml
+          kubectl delete -f SeleniumFramework/01-k8s-grid/selenium-grid.yaml
           kubectl delete pod --all
           echo "Cleanup complete."
