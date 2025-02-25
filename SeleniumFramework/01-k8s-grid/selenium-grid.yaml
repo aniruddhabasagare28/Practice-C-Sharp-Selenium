@@ -3,12 +3,24 @@ kind: Service
 metadata:
   name: selenium-hub
 spec:
+  type: NodePort  # Exposes the hub externally
   selector:
     app: selenium-hub
   ports:
-    - protocol: TCP
+    - name: hub
+      protocol: TCP
       port: 4444
       targetPort: 4444
+      nodePort: 30044
+    - name: event-bus-pub
+      protocol: TCP
+      port: 4442
+      targetPort: 4442
+    - name: event-bus-sub
+      protocol: TCP
+      port: 4443
+      targetPort: 4443
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -29,6 +41,7 @@ spec:
           image: selenium/hub:latest
           ports:
             - containerPort: 4444
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -44,6 +57,10 @@ spec:
       labels:
         app: selenium-node-chrome
     spec:
+      initContainers:
+        - name: wait-for-hub
+          image: busybox
+          command: ['sh', '-c', 'until nc -z selenium-hub 4444; do echo waiting for selenium hub; sleep 5; done;']
       containers:
         - name: selenium-node-chrome
           image: selenium/node-chrome:latest
