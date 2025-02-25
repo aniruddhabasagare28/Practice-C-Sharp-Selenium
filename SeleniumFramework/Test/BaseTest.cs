@@ -24,7 +24,8 @@ namespace SeleniumFramework.Test
         public void Setup()
         {
             string browser = ConfigReader.Get("Browser");  // Read from appsettings.json
-            string gridLink = ConfigReader.Get("GridURL");
+            string gridLink = Environment.GetEnvironmentVariable("SELENIUM_GRID_URL") ?? "http://localhost:4444";
+
 
             Driver = DriverFactoryProvider.GetFactoryDriver(browser, gridLink).CreateDriver();
             Driver.Manage().Window.Maximize();
