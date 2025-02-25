@@ -46,13 +46,15 @@ jobs:
           echo "Waiting for Selenium Nodes to be ready..."
           kubectl wait --for=condition=ready pod -l app=selenium-node-chrome --timeout=180s
           
-      - name: 🌐 Get Selenium Grid Hub URL
+      - name: 🌐 Get Selenium Grid Hub URL & Forward Port
         run: |
           echo "Fetching Selenium Grid Hub details..."
           
-          # Get the Kubernetes service IP and NodePort
+          # Get the Kubernetes service IP
           CLUSTER_IP=$(kubectl get svc selenium-hub -o jsonpath='{.spec.clusterIP}')
-          NODE_PORT=$(kubectl get svc selenium-hub -o jsonpath='{.spec.ports[?(@.name=="hub")].nodePort}')
+          
+          # Get the NodePort for port 4444
+          NODE_PORT=$(kubectl get svc selenium-hub -o jsonpath='{.spec.ports[?(@.port==4444)].nodePort}')
           
           # Construct the Selenium Grid Hub URL
           SELENIUM_GRID_URL="http://${CLUSTER_IP}:${NODE_PORT}"
@@ -62,6 +64,14 @@ jobs:
           
           # Export URL for later use
           echo "SELENIUM_GRID_URL=$SELENIUM_GRID_URL" >> $GITHUB_ENV
+          
+          # Start port-forwarding Selenium Grid to localhost:4444
+          echo "🔄 Forwarding port $NODE_PORT to localhost:4444..."
+          nohup kubectl port-forward svc/selenium-hub 4444:$NODE_PORT > /dev/null 2>&1 &
+
+          # Confirm forwarding
+          echo "✅ Selenium Grid is now accessible at: http://localhost:4444"
+          
           
       - name: 🏃 Run Selenium Tests
         run: |
