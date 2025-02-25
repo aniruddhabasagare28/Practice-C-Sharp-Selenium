@@ -43,7 +43,7 @@ jobs:
         run: |
           echo "Checking pod status..."
           
-          timeout=120  # Timeout in seconds (2 minutes)
+          timeout=60  # Timeout in seconds (1 minutes)
           elapsed=0
           interval=5   # Check interval in seconds
       
@@ -81,7 +81,10 @@ jobs:
         run: |
           kubectl port-forward svc/selenium-hub 4444:4444 &
           sleep 5
-
+          
+      - name: Check if Selenium Grid is running
+        run: curl -s http://localhost:4444/status || echo "Selenium Grid is not running"
+        
       - name: 🏃 Run Selenium Tests
         run: dotnet test --settings SeleniumFramework/test.runsettings SeleniumFramework/SeleniumFramework.csproj --logger "trx;LogFileName=TestResults.trx"
 
