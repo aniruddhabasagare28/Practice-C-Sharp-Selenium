@@ -13,7 +13,7 @@ namespace SeleniumFramework.Test
         
 
         [Test]
-        public void TestLoginFunctionality()
+        public void Test_LoginFunctionality()
         {
             Driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/login");  // Dummy login site
 
@@ -26,7 +26,7 @@ namespace SeleniumFramework.Test
         }
 
         [Test]
-        public void TestLogoutFunctionality()
+        public void Test_LogoutFunctionality()
         {
             Driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/login");  // Dummy login site
 
