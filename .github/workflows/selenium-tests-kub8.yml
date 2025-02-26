@@ -1,9 +1,9 @@
 name: Run Selenium Tests on K8s Grid
 
 on:
-  push:
-    branches:
-      - main
+  #push:
+   # branches:
+    #  - main
   pull_request:
     branches:
       - main
