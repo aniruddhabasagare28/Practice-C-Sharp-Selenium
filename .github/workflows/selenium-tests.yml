@@ -1,11 +1,11 @@
 name: Selenium C# Tests
 
 on:
-  push:
-    branches:
-      - main  # Modify if needed
-    paths:
-      - 'SeleniumFramework/01-replicas-grid/**'  # Only trigger if changes are in this folder check
+  #push:
+   # branches:
+    #  - main  # Modify if needed
+    #paths:
+     # - 'SeleniumFramework/01-replicas-grid/**'  # Only trigger if changes are in this folder check
   pull_request:
     branches:
       - main
