@@ -31,4 +31,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Jenkinspipeline\" />
+  </ItemGroup>
+
 </Project>

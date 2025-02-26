@@ -1,0 +1,89 @@
+pipeline {
+    agent any
+
+    environment {
+        DOTNET_VERSION = '8.0.101'
+        DOTNET_ROOT = "$HOME/.dotnet"
+        PATH = "$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
+    }
+
+    stages {
+        stage('Checkout Repository') {
+            steps {
+                git url: 'https://github.com/aniruddhabasagare28/Practice-C-Sharp-Selenium.git', branch: 'main'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                apt-get update
+                apt-get install -y wget curl libicu-dev docker.io
+                '''
+            }
+        }
+
+        stage('Start Docker (Without systemd)') {
+            steps {
+                sh '''
+                if [ -x "$(command -v dockerd)" ]; then
+                    echo "Starting Docker daemon..."
+                    dockerd > /dev/null 2>&1 &
+                    sleep 5
+                fi
+                '''
+            }
+        }
+
+        stage('Verify Docker') {
+            steps {
+                sh '''
+                docker --version
+                docker ps
+                '''
+            }
+        }
+
+        stage('Set up .NET') {
+            steps {
+                sh '''
+                wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+                chmod +x dotnet-install.sh
+                ./dotnet-install.sh --version ${DOTNET_VERSION} --install-dir $HOME/.dotnet
+                export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+                echo 'export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+                '''
+            }
+        }
+
+        stage('Start Selenium Grid') {
+            steps {
+                sh '''
+                docker-compose -f SeleniumFramework/01-replicas-grid/docker-compose.yaml up -d
+                '''
+            }
+        }
+
+        stage('Run Selenium Tests') {
+            steps {
+                sh '''
+                export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+                dotnet test --settings SeleniumFramework/test.runsettings SeleniumFramework/SeleniumFramework.csproj --logger "trx;LogFileName=TestResults.trx"
+                '''
+            }
+        }
+
+        stage('Archive Test Results') {
+            steps {
+                archiveArtifacts artifacts: 'SeleniumFramework/TestResults/*.trx', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Stopping Selenium Grid...'
+            sh 'docker-compose -f SeleniumFramework/01-replicas-grid/docker-compose.yaml down'
+        }
+    }
+}
