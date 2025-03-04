@@ -10,9 +10,9 @@ namespace SeleniumFramework.Test
     [Parallelizable(ParallelScope.All)]  // Enables parallel execution
     public class LoginTests : BaseTest
     {
-        
 
-        [Test]
+
+        [Test, Category("Regression")]
         public void Test_LoginFunctionality()
         {
             Driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/login");  // Dummy login site
@@ -25,7 +25,8 @@ namespace SeleniumFramework.Test
             Assert.That(Driver.Url, Is.EqualTo("https://the-internet.herokuapp.com/secure"), "Login failed!");
         }
 
-        [Test]
+        [Test, Category("Smoke")]
+        
         public void Test_LogoutFunctionality()
         {
             Driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/login");  // Dummy login site
