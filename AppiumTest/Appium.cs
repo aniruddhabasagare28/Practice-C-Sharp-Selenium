@@ -9,12 +9,20 @@ public class Appium
 {
     private AndroidDriver driver;
     private WebDriverWait wait;
-
+    private string apkPath = @"D:\Practice\Practice\AppiumTest\App\app.apk";
+    private string appPackage = "com.saucelabs.mydemoapp.rn";
 
     [SetUp]
     public void Setup()
     {
         Console.WriteLine("Setting up Appium driver...");
+
+        // Ensure the APK file exists before installation
+        if (!File.Exists(apkPath))
+        {
+            throw new FileNotFoundException("APK file not found at " + apkPath);
+        }
+
 
         // Set up Appium options
         AppiumOptions options = new AppiumOptions
@@ -24,10 +32,24 @@ public class Appium
             AutomationName = "UiAutomator2"
         };
 
-        options.AddAdditionalAppiumOption("appPackage", "com.saucelabs.mydemoapp.rn");
+        using (var tempDriver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options))
+        {
+            // Check if the app is installed
+            if (tempDriver.IsAppInstalled(appPackage))
+            {
+                Console.WriteLine("App is already installed. Uninstalling...");
+                tempDriver.RemoveApp(appPackage);
+                Console.WriteLine("App uninstalled successfully.");
+            }
+
+            // Install the APK
+            Console.WriteLine("Installing APK...");
+            tempDriver.InstallApp(apkPath);
+            Console.WriteLine("APK Installed Successfully.");
+        }
+        options.AddAdditionalAppiumOption("appPackage", appPackage);
         options.AddAdditionalAppiumOption("appActivity", ".MainActivity");
 
-        // Initialize the Android driver
         driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
         wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
