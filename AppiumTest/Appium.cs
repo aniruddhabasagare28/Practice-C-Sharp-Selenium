@@ -2,6 +2,7 @@ using OpenQA.Selenium.Appium;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Support.UI;
+using OpenQA.Selenium.Appium.Service;
 
 namespace AppiumTest;
 
@@ -11,11 +12,29 @@ public class Appium
     private WebDriverWait wait;
     private string apkPath = @"D:\Practice\Practice\AppiumTest\App\app.apk";
     private string appPackage = "com.saucelabs.mydemoapp.rn";
+    private AppiumLocalService appiumService;  // Appium server instance
 
     [SetUp]
     public void Setup()
     {
         Console.WriteLine("Setting up Appium driver...");
+
+        // Start Appium server programmatically
+        appiumService = new AppiumServiceBuilder()
+            .UsingAnyFreePort()
+            .WithLogFile(new FileInfo("appium.log"))  // Save logs to a file
+            .Build();
+        appiumService.Start();
+        // Wait for Appium to be ready
+        Thread.Sleep(5000); // Wait 5 seconds (adjust if needed)
+
+        // Check if the server is actually running
+        if (!appiumService.IsRunning)
+        {
+            throw new Exception("Failed to start Appium server.");
+        }
+
+        Console.WriteLine("Appium server started on: " + appiumService.ServiceUrl);
 
         // Ensure the APK file exists before installation
         if (!File.Exists(apkPath))
@@ -28,11 +47,11 @@ public class Appium
         AppiumOptions options = new AppiumOptions
         {
             PlatformName = "Android",
-            DeviceName = "Emulator:5554",  // Change to your actual device/emulator ID
+            DeviceName = "Phone:5554",  // Change to your actual device/emulator ID
             AutomationName = "UiAutomator2"
         };
 
-        using (var tempDriver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options))
+        using (var tempDriver = new AndroidDriver(new Uri(appiumService.ServiceUrl.ToString()), options))
         {
             // Check if the app is installed
             if (tempDriver.IsAppInstalled(appPackage))
@@ -50,7 +69,7 @@ public class Appium
         options.AddAdditionalAppiumOption("appPackage", appPackage);
         options.AddAdditionalAppiumOption("appActivity", ".MainActivity");
 
-        driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
+        driver = new AndroidDriver(new Uri(appiumService.ServiceUrl.ToString()), options);
         wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
         Console.WriteLine("Appium driver initialized.");
@@ -94,6 +113,7 @@ public class Appium
         if (driver != null)
         {
             driver.Quit();
+            appiumService.Dispose();
             driver.Dispose();
         }
         Console.WriteLine("Appium session closed.");
