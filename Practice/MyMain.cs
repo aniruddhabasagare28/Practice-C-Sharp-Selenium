@@ -13,6 +13,9 @@ namespace Practice
     {
         static void Main()
         {
+            int[] numbers = { 1,5,6,3, 2, 3, 4, 5, 6 };
+
+            Practice.FindDuplicateInArray(numbers);
 
             ICoffee coffee = new SimpleCoffee();
             Console.WriteLine($"{coffee.GetDescription()} - ${coffee.GetCost()}");

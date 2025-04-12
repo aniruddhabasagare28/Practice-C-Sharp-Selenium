@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Intrinsics.X86;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 namespace Practice
 {
@@ -196,6 +197,21 @@ namespace Practice
             }
             if (n == 1) { return 1; }
             return FibonacciRecursive(n - 1) + FibonacciRecursive(n - 2);
+        }
+
+        public static void FindDuplicateInArray(int[] arrInt)
+        {
+            HashSet<int> list = new HashSet<int>();
+            foreach (int i in arrInt)
+            {
+                if (list.Contains(i))
+                {
+                    Console.WriteLine(i + ":: Is already find, is duplicate");
+                }else
+                {
+                    list.Add(i);
+                }
+            }
         }
     }
 }
