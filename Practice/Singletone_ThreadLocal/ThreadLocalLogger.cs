@@ -13,8 +13,6 @@ namespace Practice.Singletone_ThreadLocal
     {
         private static ThreadLocal<ThreadLocalLogger> instance = new ThreadLocal<ThreadLocalLogger>();
 
-        private ThreadLocalLogger() { } 
-
         public static ThreadLocalLogger GetInstance()
         {
             return instance.Value;
