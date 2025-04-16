@@ -1,4 +1,5 @@
-﻿using System.Runtime.Intrinsics.X86;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 namespace Practice
@@ -52,7 +53,7 @@ namespace Practice
 
 
             //Find the average age of people in each city, but only include cities where there are more than 2 people.
-            var morethantwopeople = people.GroupBy(p => p.City) 
+            var morethantwopeople = people.GroupBy(p => p.City)
                                     .Where(p => p.Count() > 2)
                                     .Select(p => new
                                     {
@@ -64,7 +65,7 @@ namespace Practice
                                         {
                                             City = group.Key,
                                             Count = group.Count()
-                                        }); 
+                                        });
             foreach (var city in countEachCity)
             {
                 Console.WriteLine($"{city.City}: {city.Count} people");
@@ -86,9 +87,9 @@ namespace Practice
             var employees = new List<int> { 40000, 60000, 80000, 100000, 120000 };
 
             var filteredEmployees = employees.Where(emp => emp >= 50000 && emp <= 100000).OrderByDescending(emp => emp).ToList();
-            var lstEmp = employees.Where(emp=>emp > 50000).Select(emp=>emp).ToList();
+            var lstEmp = employees.Where(emp => emp > 50000).Select(emp => emp).ToList();
 
-            var morthansitythousand = employees.Where(emp=>emp>60000).Average(emp=>emp);
+            var morthansitythousand = employees.Where(emp => emp > 60000).Average(emp => emp);
             foreach (var person in result)
             {
                 Console.WriteLine(person.Name);
@@ -110,7 +111,7 @@ namespace Practice
             //    break;
             //}
 
-            Dictionary<char,int> keyValuePairs = new Dictionary<char,int>();
+            Dictionary<char, int> keyValuePairs = new Dictionary<char, int>();
 
             foreach (var c in input)
             {
@@ -118,7 +119,7 @@ namespace Practice
                 {
                     keyValuePairs.Add(c, 1);
                 }
-                else 
+                else
                 {
                     keyValuePairs[c]++;
                 }
@@ -126,7 +127,7 @@ namespace Practice
 
             foreach (var keyValue in keyValuePairs)
             {
-                if(keyValue.Value == 1)
+                if (keyValue.Value == 1)
                 {
                     Console.WriteLine(keyValue.Key);
                 }
@@ -138,11 +139,11 @@ namespace Practice
 
         public static bool IsPalindrome(string input)
         {
-            int left = 0, right = input.Length-1;
+            int left = 0, right = input.Length - 1;
 
-            while (left < right) 
+            while (left < right)
             {
-                if(input[left] != input[right])
+                if (input[left] != input[right])
                     return false;
                 left++;
                 right--;
@@ -154,21 +155,21 @@ namespace Practice
         {
             string[] s = input.Split(' ');
             string rsetance = "";
-            for (int i = s.Length-1; i >=0; i--)
+            for (int i = s.Length - 1; i >= 0; i--)
             {
                 rsetance += s[i] + " ";
             }
             Console.WriteLine(rsetance);
         }
 
-        public static void ReverseLongestWordInSentance(string input) 
+        public static void ReverseLongestWordInSentance(string input)
         {
             string[] words = input.Split(" ");
             int maxlength = 0;
             string lword = "";
-            foreach (string word in words) 
+            foreach (string word in words)
             {
-                if(word.Length > maxlength)
+                if (word.Length > maxlength)
                 {
                     maxlength = word.Length;
                     lword = word;
@@ -180,7 +181,7 @@ namespace Practice
         public static void FibonacciSeriesWithouREcurssion(int n)
         {
             int a = 0, b = 1, temp;
-            Console.WriteLine("Fibonacci Series: " + a + " " + b );
+            Console.WriteLine("Fibonacci Series: " + a + " " + b);
             for (int i = 1; i < n; i++)
             {
                 temp = a + b;
@@ -191,7 +192,7 @@ namespace Practice
 
         public static int FibonacciRecursive(int n)
         {
-            if(n == 0)
+            if (n == 0)
             {
                 return n;
             }
@@ -207,11 +208,78 @@ namespace Practice
                 if (list.Contains(i))
                 {
                     Console.WriteLine(i + ":: Is already find, is duplicate");
-                }else
+                }
+                else
                 {
                     list.Add(i);
                 }
             }
         }
+
+        public static Boolean AreAngram(String str1, String str2)
+        {
+            if (str2.Length != str1.Length)
+            {
+                return false;
+            }
+            Dictionary<char, int> keyValuePairs = new Dictionary<char, int>();
+            foreach (char c in str1)
+            {
+                if (keyValuePairs.ContainsKey(c))
+                {
+                    keyValuePairs[c]++;
+                }
+                else
+                {
+                    keyValuePairs[c] = 1;
+                }
+            }
+            foreach (char c in str2)
+            {
+                if (!keyValuePairs.ContainsKey(c) || keyValuePairs[c] == 0)
+                    return false;
+                keyValuePairs[c]--;
+            }
+            return true;
+        }
+
+        public static Boolean IsSubstring(string mainstr, string substr)
+        {
+            if ((mainstr.Length < substr.Length)) { return false; }
+            for (int i = 0; i <= mainstr.Length-substr.Length; i++)
+            {
+                int j;
+                for (j = 0; j < substr.Length; j++)
+                {
+                    if (mainstr[i + j] != substr[j])
+                        break;
+                }
+                if (j == substr.Length)
+                    return true;
+            }
+           return false;
+        }
+
+        public static void FindAllSubString(string mainStr)
+        {
+            List<string> list = new List<string>();
+            for (int i = 0; i < mainStr.Length; i++)
+            {
+                for (int j = i; j < mainStr.Length; j++)
+                {
+                    string sub = "";
+                    for (int k = i; k <= j; k++)
+                    {
+                        sub += mainStr[k];
+                    }
+                    list.Add(sub);
+                }
+            }
+            foreach (string s in list)
+            {
+                Console.WriteLine(s);
+            }
+        }
+
     }
 }

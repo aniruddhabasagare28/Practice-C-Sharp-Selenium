@@ -4,6 +4,7 @@
 # Ignore build and output folders
 bin/
 obj/
+.idea/
 
 # Ignore user-specific files
 *.user
