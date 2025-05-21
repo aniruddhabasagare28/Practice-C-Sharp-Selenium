@@ -98,19 +98,6 @@ namespace Practice
 
         public static void FirstNonRepeatingChar(string input)
         {
-            //for (int i = 0; i < input.Length; i++) 
-            //{
-            //    for (int j=i+1; j < input.Length; j++) 
-            //    {
-            //        if(input[i] == input[j])
-            //        {
-            //            break;
-            //        }
-            //    }
-            //    Console.WriteLine("This is first not repeating char::"+input[i]);
-            //    break;
-            //}
-
             Dictionary<char, int> keyValuePairs = new Dictionary<char, int>();
 
             foreach (var c in input)
@@ -272,7 +259,7 @@ namespace Practice
                     {
                         sub += mainStr[k];
                     }
-                    list.Add(sub);
+                    list.Add(sub); 
                 }
             }
             foreach (string s in list)
