@@ -233,7 +233,7 @@ namespace Practice
         public static Boolean IsSubstring(string mainstr, string substr)
         {
             if ((mainstr.Length < substr.Length)) { return false; }
-            for (int i = 0; i <= mainstr.Length-substr.Length; i++)
+            for (int i = 0; i <= mainstr.Length - substr.Length; i++)
             {
                 int j;
                 for (j = 0; j < substr.Length; j++)
@@ -244,7 +244,7 @@ namespace Practice
                 if (j == substr.Length)
                     return true;
             }
-           return false;
+            return false;
         }
 
         public static void FindAllSubString(string mainStr)
@@ -259,7 +259,7 @@ namespace Practice
                     {
                         sub += mainStr[k];
                     }
-                    list.Add(sub); 
+                    list.Add(sub);
                 }
             }
             foreach (string s in list)
@@ -268,5 +268,35 @@ namespace Practice
             }
         }
 
+        public static void FindMaxNumberOfFrequency(string mainstr)
+        {
+            Dictionary<char, int> keyValuePairs = new Dictionary<char, int>();
+            foreach (char c in mainstr)
+            {
+                if (!keyValuePairs.ContainsKey(c))
+                {
+                    keyValuePairs.Add(c, 1);
+                }
+                else
+                {
+                    keyValuePairs[c]++;
+                }
+            }
+            int max = 0;
+            char key = '\0';
+            foreach (KeyValuePair<char, int> keys in keyValuePairs)
+            {
+                if (keyValuePairs.ContainsKey(keys.Key))
+                {
+                    if (max < keys.Value)
+                    {
+                        max = keys.Value;
+                        key = keys.Key;
+                    }
+                }
+            }
+            Console.WriteLine($"Key is {key} :: {max}");
+        }
+    
     }
 }
